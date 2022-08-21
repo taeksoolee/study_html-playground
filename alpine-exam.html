@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css"   rel="stylesheet">
+  <title>Document</title>
+</head>
+<body class="bg-slate-200">
+  <main style="display: none;" 
+    class="
+      mx-auto my-12 p-12 bg-white 
+      w-[calc(40rem)]
+      h-[calc(100vh-6rem)]
+      overflow-y-scroll
+    " 
+    x-data="{todos: [], nextId: 1, newTitle, loaded: false}" 
+    x-show="loaded"
+    x-transition:enter.duration.800ms
+    x-init="
+      todos = JSON.parse(localStorage.getItem('todos') || '[]');
+      nextId = Number(localStorage.getItem('nextId'));
+      loaded = true;
+    " 
+    x-effect="
+      localStorage.setItem('todos', JSON.stringify(todos));
+      localStorage.setItem('nextId', nextId + '');
+    "
+  >
+    <section class="pb-5 text-center">
+      <h1 class="text-3xl">TODO LIST</h1>
+      <h4 class="text-xl">(with. alpine.js)</h4>
+    </section>
+    <setion>
+      <div class="mb-5 flex justify-end">
+        <button x-on:click="todos = []" 
+          class="
+            p-3 
+            rounded-md bg-gradient-to-tl to-indigo-300 from-indigo-500 
+            focus:outline-none focus:ring focus:ring-violet-300
+            text-white 
+            w-30 h-30
+            flex justify-center items-center
+          "
+        >Clear</button>
+      </div>
+
+      <form 
+        x-on:submit.prevent="
+          todos = [...todos, genTodo(nextId, newTitle)]; 
+          newTitle = ''; nextId++;
+        " 
+        class="flex justify-center items-center"
+      >
+        <input x-model="newTitle" class="
+          flex-1
+          mr-5 py-2 w-full h-full
+          border-2
+          focus:border-0 focus:outline-2 focus:outline-indigo-400
+        " />
+        <button type="submit" 
+          class="
+            p-3 
+            rounded-md bg-gradient-to-tl to-indigo-300 from-indigo-500 
+            focus:outline-none focus:ring focus:ring-violet-300
+            text-white 
+            w-10 h-10 
+            flex justify-center items-center
+          "
+        >+</button>
+      </form>
+
+      <template x-if="todos.length > 0" x-for="(todo, index) in todos" :key="index">
+        <div x-on:click="todo.checked = !todo.checked;" 
+          class="
+            flex justify-between items-center 
+            my-10 w-full
+            cursor-pointer hover:text-indigo-300
+          "
+        >
+          <div>
+            <span class="mr-10"><span x-text="index + 1"></span>.</span>
+            <template x-if="todo.checked">
+              <del x-text="todo.title" class="text-red-500 text-2xl"></del>
+            </template>
+            <template x-if="!todo.checked">
+              <span x-text="todo.title" class="text-2xl"></span>
+            </template>
+          </div>
+          <div class="flex flex-col items-center">
+            <button x-on:click="todos = todos.filter(_todo => todo.id !== _todo.id)" class="text-2xl">x</button>
+            <!-- <input type="checkbox" x-model="todo.checked" class="block h-full"/> -->
+          </div>
+        </div>
+      </template>
+      <template x-if="todos.length === 0">
+        <p class="text-center">Please, Regist Todo...</p>
+      </template>
+    </section>
+  </main>
+
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.tailwindcss.com/"></script>  
+  <script>
+    let newTitle = '';
+
+    const genTodo = (id, title) => ({
+      id,
+      title,
+      checked: false,
+    });
+  </script>
+</body>
+</html>
