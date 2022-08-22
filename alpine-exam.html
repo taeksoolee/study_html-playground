@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css"   rel="stylesheet">
-  <title>Document</title>
+  <title>Alpine Example</title>
 </head>
 <body class="bg-slate-200">
   <main style="display: none;" 
@@ -48,12 +48,13 @@
 
       <form 
         x-on:submit.prevent="
-          todos = [...todos, genTodo(nextId, newTitle)]; 
+          todos = [...todos, genTodo(nextId, newTitle)];
           newTitle = ''; nextId++;
         " 
         class="flex justify-center items-center"
       >
         <input x-model="newTitle" class="
+          px-2
           flex-1
           mr-5 py-2 w-full h-full
           border-2
@@ -70,29 +71,29 @@
           "
         >+</button>
       </form>
-
-      <template x-if="todos.length > 0" x-for="(todo, index) in todos" :key="index">
-        <div x-on:click="todo.checked = !todo.checked;" 
-          class="
-            flex justify-between items-center 
-            my-10 w-full
-            cursor-pointer hover:text-indigo-300
-          "
-        >
-          <div>
-            <span class="mr-10"><span x-text="index + 1"></span>.</span>
-            <template x-if="todo.checked">
-              <del x-text="todo.title" class="text-red-500 text-2xl"></del>
-            </template>
-            <template x-if="!todo.checked">
-              <span x-text="todo.title" class="text-2xl"></span>
-            </template>
+      <!-- <div x-text="JSON.stringify(todos)"></div> -->
+      <template x-if="todos.length > 0" :key="index">
+        <template x-for="(todo, index) in todos">
+          <div x-on:click="todo.checked = !todo.checked;" 
+            class="
+              flex justify-between items-center 
+              my-10 w-full
+              cursor-pointer hover:text-indigo-300
+            "
+          >
+            <div>
+              <template x-if="todo.checked">
+                <del x-text="todo.title" class="text-red-500 text-2xl"></del>
+              </template>
+              <template x-if="!todo.checked">
+                <span x-text="todo.title" class="text-2xl"></span>
+              </template>
+            </div>
+            <div class="flex flex-col items-center">
+              <button x-on:click="todos = todos.filter(_todo => todo.id !== _todo.id)" class="text-2xl">x</button>
+            </div>
           </div>
-          <div class="flex flex-col items-center">
-            <button x-on:click="todos = todos.filter(_todo => todo.id !== _todo.id)" class="text-2xl">x</button>
-            <!-- <input type="checkbox" x-model="todo.checked" class="block h-full"/> -->
-          </div>
-        </div>
+        </template>
       </template>
       <template x-if="todos.length === 0">
         <p class="text-center">Please, Regist Todo...</p>
