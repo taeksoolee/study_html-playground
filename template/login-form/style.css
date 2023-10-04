@@ -1,0 +1,16 @@
+body {
+  min-height: 100vh;
+  padding: 50px;
+}
+
+.table-wrap {
+  width: 100%;
+}
+
+tr {
+  background-color: #11191f;
+}
+
+td {
+  text-wrap: nowrap;
+}

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Form</title>
+  <link rel="stylesheet" href="./style.css">
+
+  <!-- picocss -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+  <script defer src="https://cdn.jsdelivr.net/gh/hankhank10/alpine-fetch@main/alpine-fetch.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/pinecone-router@3.x.x/dist/router.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body>
+  <template x-route="/"></template>
+  <template x-route="/login"></template>
+  <template x-route="/home"></template>
+
+  <div id="app" x-data="{$access: $persist(''), $refresh: $persist('')}">
+    <!-- <div x-text="JSON.stringify($router)"></div> -->
+    <!--  -->
+    <!--  -->
+    <!-- Root -->
+    <!--  -->
+    <!--  -->
+    <template x-if="$router.path === '/'">
+      <div x-init="() => {}">
+        <h1>Root</h1>
+        <article>
+          <div class="grid">
+            <template x-if="!!$access">
+              <button class="secondary" x-on:click="() => $router.navigate('/home')">Go Home Page</button>
+            </template>
+            <template x-if="!$access">
+              <button class="secondary" x-on:click="() => $router.navigate('/login')">Go Login Page</button>
+            </template>
+          </div>
+        </article>
+      </div>
+    </template>
+    <!--  -->
+    <!--  -->
+    <!-- Login -->
+    <!--  -->
+    <!--  -->
+    <template x-if="$router.path === '/login'">
+      <div x-init="!!$access && (() => location.href = '/')()">
+        <h1>Login Form</h1>
+        <form name="loginform" x-data="{
+            email: '',
+            password: '',
+            isLoading: false,
+            error: '',
+          }" x-on:submit.prevent="
+            function (e) {
+              isLoading = true;
+              fetch('http://3.35.223.111/api/user/token/', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  email, password
+                }),
+              })
+                .then(res => res.json())
+                .then(({access, refresh, message}) => {
+                  if (access) {
+                    $access = access;
+                    if (refresh) {
+                      $refresh = refresh;
+                      $router.navigate('/');
+                    }
+                  }
+
+                  if (message) {
+                    error = message;
+                  }
+                })
+                .finally(() => isLoading = false);
+            }
+          ">
+          <div class="grid">
+            <label for="email">
+              Email
+              <span data-tooltip="Email Pattern"><ion-icon name="help-outline"></ion-icon></span>
+              <input id="email" name="email" required x-model="email" autocomplete="username" />
+            </label>
+            <label for="password">
+              Password
+              <input id="password" name="password" type="password" required x-model="password"
+                autocomplete="current-password" />
+            </label>
+          </div>
+          <div>
+            <div x-text="error" class="primary"></div>
+          </div>
+          <button type="submit" x-bind:aria-busy="isLoading">Login</button>
+        </form>
+      </div>
+    </template>
+    <!--  -->
+    <!--  -->
+    <!-- Home -->
+    <!--  -->
+    <!--  -->
+    <template x-if="$router.path === '/home'">
+      <div>
+        <header>
+          <div>
+            <h1>
+              Home<span role="button" x-on:click="$access = ''; $router.navigate('/');" style="float: right;">
+                <ion-icon name="log-out-outline"></ion-icon>
+              </span>
+            </h1>
+          </div>
+        </header>
+
+
+        <div x-data="{ response: {}, rows: [] }" x-init="
+          response = await fetch('http://3.35.223.111/api/resource/', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + $access,
+            }
+          }).then(res => res.json());
+
+          rows = response.results.map(e => ([
+            e.infra.name,
+            e.infra.address,
+            e.infra.type,
+            e.infra.latitude,
+            e.infra.longitude,
+          ]));
+
+          console.log(rows);
+        ">
+
+          <!-- <div x-text="JSON.stringify(rows)"></div> -->
+
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Address</th>
+                  <th>Type</th>
+                  <th>Latitude</th>
+                  <th>Longitude</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="row in rows">
+                  <tr>
+                    <template x-for="cell in row">
+                      <td x-text="cell"></td>
+                    </template>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+  <script>
+    document.addEventListener('alpine:initialized', () => {
+      window.PineconeRouter.settings.hash = true // use hash routing
+      window.PineconeRouter.settings.basePath = '/' // set the base for the URL, doesn't work with hash routing
+    })
+  </script>
+  </div>
+</body>
+
+</html>
